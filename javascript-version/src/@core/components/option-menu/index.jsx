@@ -24,6 +24,7 @@ import classnames from 'classnames'
 const IconButtonWrapper = props => {
   // Props
   const { tooltipProps, children } = props
+  const { options } = props
 
   return tooltipProps?.title ? <Tooltip {...tooltipProps}>{children}</Tooltip> : children
 }
@@ -31,7 +32,7 @@ const IconButtonWrapper = props => {
 const MenuItemWrapper = ({ children, option }) => {
   if (option.href) {
     return (
-      <Box component={Link} href={option.href} {...option.linkProps}>
+      <Box component={Link} href={option.href || '#'} {...option.linkProps}>
         {children}
       </Box>
     )

@@ -7,14 +7,16 @@ import { forwardRef } from 'react'
 import NextLink from 'next/link'
 
 const Link = (props, ref) => {
-  // Props
+  // Destructure props and provide a fallback for href
   const { href, onClick, ...rest } = props
+  const validHref = href || '/' // Always ensure href is at least '/'
 
   return (
     <NextLink
       ref={ref}
+      href={validHref}
+      // Pass all other props
       {...rest}
-      href={href || '/'}
       onClick={onClick ? e => onClick(e) : !href ? e => e.preventDefault() : undefined}
     />
   )
