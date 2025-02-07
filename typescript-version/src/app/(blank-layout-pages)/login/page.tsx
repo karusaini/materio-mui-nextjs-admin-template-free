@@ -1,20 +1,24 @@
 'use client'
+
 import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '@/libs/firebase'
 import { useRouter } from 'next/navigation'
-import { TextField, Button, Box, Typography, Alert, Container, Paper } from '@mui/material'
+import { TextField, Button, Box, Typography, Alert, Container, Paper, CircularProgress } from '@mui/material'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleLogin = async e => {
     e.preventDefault()
     setError('')
+    setLoading(true)
+
     try {
       // Sign in user with email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
@@ -25,15 +29,14 @@ export default function Login() {
 
       if (userDoc.exists()) {
         const userRole = userDoc.data().role
-        console.log('Fetched user role:', userRole) // Debugging line
 
         // Storing user role in localStorage and redirecting based on role
         localStorage.setItem('userRole', userRole)
 
         if (userRole === 'customer') {
-          router.push('/customer-dashboard') // Redirect to customer dashboard
+          router.push('/customer-dashboard')
         } else if (userRole === 'support') {
-          router.push('/support-dashboard') // Redirect to support dashboard
+          router.push('/support-dashboard')
         } else {
           setError('Role not recognized.')
         }
@@ -42,21 +45,28 @@ export default function Login() {
       }
     } catch (err) {
       setError(`Error: ${err.message}`)
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <Container maxWidth='xs' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Paper elevation={3} sx={{ padding: 4, width: '100%', textAlign: 'center' }}>
-        <Typography variant='h5' gutterBottom>
-          Login
+      <Paper elevation={8} sx={{ p: 5, width: '100%', textAlign: 'center', borderRadius: 3 }}>
+        <Typography variant='h4' gutterBottom fontWeight='bold'>
+          Welcome Back!
         </Typography>
+        <Typography variant='subtitle1' sx={{ color: 'gray' }}>
+          Please sign in to your account
+        </Typography>
+
         {error && (
-          <Alert severity='error' sx={{ mb: 2 }}>
+          <Alert severity='error' sx={{ mt: 2 }}>
             {error}
           </Alert>
         )}
-        <Box component='form' onSubmit={handleLogin} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+
+        <Box component='form' onSubmit={handleLogin} sx={{ mt: 4 }}>
           <TextField
             label='Email'
             type='email'
@@ -65,6 +75,7 @@ export default function Login() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            sx={{ mb: 2 }}
           />
           <TextField
             label='Password'
@@ -74,9 +85,19 @@ export default function Login() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            sx={{ mb: 2 }}
           />
-          <Button type='submit' variant='contained' color='primary' fullWidth>
-            Login
+
+          <Button
+            type='submit'
+            variant='contained'
+            color='primary'
+            fullWidth
+            size='large'
+            sx={{ py: 1.5 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color='inherit' /> : 'Login'}
           </Button>
         </Box>
       </Paper>
